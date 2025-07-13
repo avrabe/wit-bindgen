@@ -821,6 +821,7 @@ macro_rules! __export_{world_name}_impl {{
                 path.push_str("::");
                 path.push_str(path_to_types)
             }
+            
             uwriteln!(self.src, "{path}::{name}!($ty with_types_in {path});");
         }
 
