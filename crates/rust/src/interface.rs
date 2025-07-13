@@ -324,7 +324,17 @@ macro_rules! {macro_name} {{
         uwriteln!(self.src, "}};);");
         uwriteln!(self.src, "}}");
         uwriteln!(self.src, "#[doc(hidden)]");
-        uwriteln!(self.src, "{use_vis} use {macro_name};");
+        
+        // For world exports when pub_export_macro is enabled, we need to use pub(crate)
+        // to avoid duplicate public exports since the macro will be re-exported through
+        // the main export macro
+        let actual_vis = if interface.is_none() && self.r#gen.opts.pub_export_macro {
+            "pub(crate)"
+        } else {
+            use_vis
+        };
+        
+        uwriteln!(self.src, "{actual_vis} use {macro_name};");
         Ok(macro_name)
     }
 
