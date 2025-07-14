@@ -324,16 +324,18 @@ macro_rules! {macro_name} {{
         uwriteln!(self.src, "}};);");
         uwriteln!(self.src, "}}");
         uwriteln!(self.src, "#[doc(hidden)]");
-        
-        // For world exports when pub_export_macro is enabled, we need to use pub(crate)
-        // to avoid duplicate public exports since the macro will be re-exported through
-        // the main export macro
-        let actual_vis = if interface.is_none() && self.r#gen.opts.pub_export_macro {
-            "pub(crate)"
+
+        // Interface export macros always need pub visibility to be accessible via module paths
+        // from the main export macro. World exports use pub(crate) when pub_export_macro is
+        // enabled to avoid duplicate public exports since they're re-exported through the main macro.
+        let actual_vis = if interface.is_some() {
+            "pub" // Interface exports always need pub visibility for module path access
+        } else if self.r#gen.opts.pub_export_macro {
+            "pub(crate)" // World exports with pub_export_macro use pub(crate) to avoid duplicates
         } else {
-            use_vis
+            use_vis // Other world exports use default visibility
         };
-        
+
         uwriteln!(self.src, "{actual_vis} use {macro_name};");
         Ok(macro_name)
     }
